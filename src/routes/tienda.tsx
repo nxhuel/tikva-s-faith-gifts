@@ -20,11 +20,12 @@ export const Route = createFileRoute("/tienda")({
 });
 
 function Tienda() {
-  const { productos, promos } = useTikva();
+  const { productos, categorias, promos } = useTikva();
   const [cat, setCat] = useState("Todo");
-  const cats = ["Todo", ...Array.from(new Set(productos.map((p) => p.categoria)))];
-  const lista = productos.filter((p) => p.activo && (cat === "Todo" || p.categoria === cat));
+  const lista = productos.filter((p) => p.activo && (cat === "Todo" || p.categoriaId === cat));
   const promoActiva = promos.find((p) => p.activa);
+  const contar = (id?: string) =>
+    productos.filter((p) => p.activo && (id ? p.categoriaId === id : true)).length;
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-16">
@@ -45,20 +46,56 @@ function Tienda() {
         </div>
       )}
 
-      <div className="mt-10 flex flex-wrap gap-2">
-        {cats.map((c) => (
+      <div className="mt-10">
+        <p className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
+          Filtrá por categoría
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2.5">
           <button
-            key={c}
-            onClick={() => setCat(c)}
-            className={`rounded-full border px-4 py-1.5 text-xs tracking-wide transition-colors ${
-              cat === c
-                ? "border-ink bg-ink text-primary-foreground"
-                : "border-border text-muted-foreground hover:border-ink hover:text-ink"
+            onClick={() => setCat("Todo")}
+            className={`inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-sm font-medium tracking-wide transition-all hover:-translate-y-0.5 ${
+              cat === "Todo"
+                ? "border-ink bg-ink text-primary-foreground shadow-md"
+                : "border-border bg-card text-muted-foreground hover:border-ink hover:text-ink"
             }`}
           >
-            {c}
+            Todo
+            <span
+              className={`inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-semibold tabular-nums ${
+                cat === "Todo"
+                  ? "bg-paper/20 text-primary-foreground"
+                  : "bg-secondary text-muted-foreground"
+              }`}
+            >
+              {contar()}
+            </span>
           </button>
-        ))}
+          {categorias.map((c) => {
+            const activa = cat === c.id;
+            return (
+              <button
+                key={c.id}
+                onClick={() => setCat(c.id)}
+                className={`inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-sm font-medium tracking-wide transition-all hover:-translate-y-0.5 ${
+                  activa
+                    ? "border-ink bg-ink text-primary-foreground shadow-md"
+                    : "border-border bg-card text-muted-foreground hover:border-ink hover:text-ink"
+                }`}
+              >
+                {c.nombre}
+                <span
+                  className={`inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-semibold tabular-nums ${
+                    activa
+                      ? "bg-paper/20 text-primary-foreground"
+                      : "bg-secondary text-muted-foreground"
+                  }`}
+                >
+                  {contar(c.id)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

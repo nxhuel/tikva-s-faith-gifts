@@ -1,7 +1,6 @@
 import { Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { Menu, ShoppingBag, X } from "lucide-react";
-import { LOGO_IMG } from "@/lib/images";
 import { useTikva } from "@/lib/store";
 
 const nav = [
@@ -18,32 +17,48 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-paper/85 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-5">
-        <Link to="/" className="flex items-center gap-2.5">
-          <img src={LOGO_IMG} alt="Tikva" width={36} height={36} className="h-9 w-9 rounded-full" />
-          <span className="font-display text-lg tracking-tight">Tikva</span>
+      <div className="mx-auto grid h-20 max-w-6xl grid-cols-[1fr_auto_1fr] items-center gap-3 px-5 md:h-24">
+        {/* Izquierda: navegación */}
+        <div className="flex items-center">
+          <button
+            className="rounded-full p-2 text-ink transition-colors hover:bg-secondary md:hidden"
+            aria-label={open ? "Cerrar menú" : "Abrir menú"}
+            onClick={() => setOpen((v) => !v)}
+          >
+            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+          <nav className="ml-6 hidden items-center gap-7 md:flex">
+            {nav.map((n) => (
+              <Link
+                key={n.to}
+                to={n.to}
+                activeOptions={{ exact: n.to === "/" }}
+                className="text-[15px] font-medium text-muted-foreground transition-colors hover:text-ink data-[status=active]:text-ink data-[status=active]:underline data-[status=active]:decoration-gold data-[status=active]:decoration-[3px] data-[status=active]:underline-offset-[10px]"
+              >
+                {n.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+
+        {/* Centro: wordmark */}
+        <Link to="/" className="group select-none text-center leading-none">
+          <span className="font-marker -rotate-1 block text-[2rem] font-bold tracking-wide text-ink transition-transform duration-300 group-hover:-rotate-2 md:text-4xl">
+            Tikva
+          </span>
+          <span className="mt-1.5 block text-[8px] uppercase tracking-[0.34em] text-muted-foreground">
+            Regalería cristiana
+          </span>
         </Link>
 
-        <nav className="ml-6 hidden items-center gap-6 md:flex">
-          {nav.map((n) => (
-            <Link
-              key={n.to}
-              to={n.to}
-              activeOptions={{ exact: n.to === "/" }}
-              className="text-sm text-muted-foreground transition-colors hover:text-ink data-[status=active]:text-ink data-[status=active]:underline data-[status=active]:decoration-sky-deep data-[status=active]:decoration-2 data-[status=active]:underline-offset-8"
-            >
-              {n.label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="ml-auto flex items-center gap-2">
+        {/* Derecha: acciones */}
+        <div className="flex items-center justify-end gap-2">
           <div className="hidden items-center gap-2 sm:flex">
             {usuario ? (
               <>
                 <Link
                   to={usuario.rol === "admin" ? "/admin" : "/cuenta"}
-                  className="rounded-full border border-border px-3.5 py-1.5 text-xs tracking-wide transition-colors hover:bg-secondary"
+                  className="rounded-full border border-border px-4 py-2 text-xs font-medium tracking-wide transition-colors hover:bg-secondary"
                 >
                   {usuario.rol === "admin" ? "Panel" : usuario.nombre.split(" ")[0]}
                 </Link>
@@ -60,7 +75,7 @@ export function SiteHeader() {
             ) : (
               <Link
                 to="/ingresar"
-                className="rounded-full border border-border px-3.5 py-1.5 text-xs tracking-wide transition-colors hover:bg-secondary"
+                className="rounded-full border border-border px-4 py-2 text-xs font-medium tracking-wide transition-colors hover:bg-secondary"
               >
                 Ingresar
               </Link>
@@ -69,24 +84,16 @@ export function SiteHeader() {
 
           <Link
             to="/carrito"
-            className="relative flex items-center gap-2 rounded-full bg-ink px-4 py-2 text-xs tracking-wide text-primary-foreground transition-transform hover:-translate-y-0.5"
+            className="relative flex items-center gap-2 rounded-full bg-ink px-4 py-2.5 text-xs font-medium tracking-wide text-primary-foreground transition-transform hover:-translate-y-0.5"
           >
-            <ShoppingBag className="h-3.5 w-3.5" />
-            Carrito
+            <ShoppingBag className="h-4 w-4" />
+            <span className="hidden sm:inline">Carrito</span>
             {cantidadCarrito > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-gold text-[10px] font-semibold text-ink">
+              <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-gold text-[10px] font-semibold text-ink shadow-sm">
                 {cantidadCarrito}
               </span>
             )}
           </Link>
-
-          <button
-            className="md:hidden"
-            aria-label="Menú"
-            onClick={() => setOpen((v) => !v)}
-          >
-            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
         </div>
       </div>
 
@@ -94,11 +101,20 @@ export function SiteHeader() {
         <div className="border-t border-border bg-paper px-5 py-4 md:hidden">
           <div className="flex flex-col gap-3">
             {nav.map((n) => (
-              <Link key={n.to} to={n.to} onClick={() => setOpen(false)} className="text-sm">
+              <Link
+                key={n.to}
+                to={n.to}
+                onClick={() => setOpen(false)}
+                className="py-1 text-[15px]"
+              >
                 {n.label}
               </Link>
             ))}
-            <Link to={usuario ? (usuario.rol === "admin" ? "/admin" : "/cuenta") : "/ingresar"} onClick={() => setOpen(false)} className="text-sm">
+            <Link
+              to={usuario ? (usuario.rol === "admin" ? "/admin" : "/cuenta") : "/ingresar"}
+              onClick={() => setOpen(false)}
+              className="py-1 text-[15px] font-medium text-muted-foreground"
+            >
               {usuario ? "Mi cuenta" : "Ingresar"}
             </Link>
           </div>

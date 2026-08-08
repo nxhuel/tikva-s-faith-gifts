@@ -40,12 +40,12 @@ function Home() {
       <section className="relative overflow-hidden border-b border-border">
         <img
           src={HERO_IMG}
-          alt="Biblia abierta junto a un frasco con versículos enrollados"
+          alt="Frasco 365 versículos bíblicos de Tikva, regalería cristiana"
           width={1600}
           height={1104}
           className="absolute inset-0 h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-linear-to-r from-paper via-paper/85 to-paper/10" />
+        <div className="absolute inset-0 bg-linear-to-r from-paper via-paper/65 to-paper/10" />
         <div className="relative mx-auto grid max-w-6xl gap-10 px-5 py-24 md:py-32">
           <div className="max-w-xl">
             <p className="eyebrow">Regalería cristiana · Buenos Aires</p>

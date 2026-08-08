@@ -63,7 +63,7 @@ function Carrito() {
             return (
               <div key={item.id} className="paper-card label-notch flex gap-4 p-4">
                 <img
-                  src={productImage(prod?.imagen ?? "")}
+                  src={productImage(prod?.imagenes[0])}
                   alt={item.nombre}
                   width={120}
                   height={140}
@@ -74,8 +74,15 @@ function Carrito() {
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <h2 className="font-display text-lg leading-snug">{item.nombre}</h2>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {money(item.precio)} por unidad
+                      <p className="mt-1 flex items-baseline gap-2 text-xs text-muted-foreground">
+                        {prod && item.precio < prod.precio && (
+                          <span className="line-through decoration-destructive/60">
+                            {money(prod.precio)}
+                          </span>
+                        )}
+                        <span className={prod && item.precio < prod.precio ? "text-sky-deep" : ""}>
+                          {money(item.precio)} por unidad
+                        </span>
                       </p>
                     </div>
                     <button
@@ -148,7 +155,8 @@ function Carrito() {
               onSubmit={(e) => {
                 e.preventDefault();
                 const r = aplicarCupon(codigo);
-                r.ok ? toast.success(r.mensaje) : toast.error(r.mensaje);
+                if (r.ok) toast.success(r.mensaje);
+                else toast.error(r.mensaje);
               }}
               className="flex gap-2"
             >

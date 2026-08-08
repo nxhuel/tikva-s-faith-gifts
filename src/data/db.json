@@ -8,20 +8,21 @@
     "envioCosto": 3500,
     "envioGratisDesde": 45000
   },
-  "usuarios": [
+  "categorias": [
     {
-      "id": "u-admin",
-      "nombre": "Equipo Tikva",
-      "email": "admin",
-      "password": "admin123",
-      "rol": "admin"
+      "id": "cat-frascos",
+      "nombre": "Frascos",
+      "descripcion": "Frascos con versículos enrollados a mano."
     },
     {
-      "id": "u-demo",
-      "nombre": "Melina Rivas",
-      "email": "melina@mail.com",
-      "password": "tikva123",
-      "rol": "cliente"
+      "id": "cat-papeleria",
+      "nombre": "Papelería",
+      "descripcion": "Anotadores, agendas, separadores y stickers."
+    },
+    {
+      "id": "cat-packs",
+      "nombre": "Packs",
+      "descripcion": "Armados listos para regalar."
     }
   ],
   "productos": [
@@ -41,8 +42,8 @@
       "precio": 18900,
       "costo": 7400,
       "stock": 14,
-      "categoria": "Frascos",
-      "imagen": "frasco-365",
+      "categoriaId": "cat-frascos",
+      "imagenes": [],
       "destacado": true,
       "activo": true
     },
@@ -60,8 +61,8 @@
       "precio": 21500,
       "costo": 9800,
       "stock": 0,
-      "categoria": "Papelería",
-      "imagen": "anotadores",
+      "categoriaId": "cat-papeleria",
+      "imagenes": [],
       "destacado": false,
       "activo": true
     },
@@ -79,8 +80,8 @@
       "precio": 8900,
       "costo": 3200,
       "stock": 0,
-      "categoria": "Papelería",
-      "imagen": "separadores",
+      "categoriaId": "cat-papeleria",
+      "imagenes": [],
       "destacado": false,
       "activo": true
     },
@@ -99,9 +100,57 @@
       "precio": 26900,
       "costo": 11500,
       "stock": 6,
-      "categoria": "Packs",
-      "imagen": "packs",
+      "categoriaId": "cat-packs",
+      "imagenes": [],
       "destacado": true,
+      "activo": true
+    }
+  ],
+  "clientes": [
+    {
+      "id": "c-melina",
+      "nombre": "Melina Rivas",
+      "email": "melina@mail.com",
+      "telefono": "1145887711",
+      "direccion": "Av. Rivadavia 4820, CABA",
+      "notas": "Prefiere el retiro cerca de Caballito.",
+      "fechaAlta": "2026-07-28T14:20:00.000Z"
+    },
+    {
+      "id": "c-rocio",
+      "nombre": "Rocío Paz",
+      "email": "rocio@mail.com",
+      "telefono": "1166003321",
+      "direccion": "",
+      "notas": "",
+      "fechaAlta": "2026-08-03T18:05:00.000Z"
+    }
+  ],
+  "descuentos": [
+    {
+      "id": "d-vuelta",
+      "nombre": "Vuelta a clases",
+      "etiqueta": "Vuelta a clases",
+      "tipo": "porcentaje",
+      "valor": 10,
+      "fechaInicio": "2026-08-01",
+      "fechaFin": "2026-08-31",
+      "alcance": "categoria",
+      "categoriaId": "cat-papeleria",
+      "productoIds": [],
+      "activo": true
+    },
+    {
+      "id": "d-madre",
+      "nombre": "Día de la Madre",
+      "etiqueta": "Día de la Madre",
+      "tipo": "porcentaje",
+      "valor": 15,
+      "fechaInicio": "2026-10-16",
+      "fechaFin": "2026-10-18",
+      "alcance": "todos",
+      "categoriaId": null,
+      "productoIds": [],
       "activo": true
     }
   ],
@@ -163,5 +212,21 @@
     { "id": "g-1", "fecha": "2026-07-20T00:00:00.000Z", "concepto": "Compra de frascos x24", "categoria": "Insumos", "monto": 96000 },
     { "id": "g-2", "fecha": "2026-07-22T00:00:00.000Z", "concepto": "Impresión de etiquetas", "categoria": "Impresión", "monto": 28500 },
     { "id": "g-3", "fecha": "2026-08-01T00:00:00.000Z", "concepto": "Publicidad Instagram", "categoria": "Marketing", "monto": 15000 }
+  ],
+  "usuarios": [
+    {
+      "id": "u-admin",
+      "nombre": "Equipo Tikva",
+      "email": "admin",
+      "password": "admin123",
+      "rol": "admin"
+    },
+    {
+      "id": "u-demo",
+      "nombre": "Melina Rivas",
+      "email": "melina@mail.com",
+      "password": "tikva123",
+      "rol": "cliente"
+    }
   ]
 }

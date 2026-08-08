@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { PACKS_IMG, NOTA_IMG } from "@/lib/images";
+import { PACKS_IMG } from "@/lib/images";
 
 export const Route = createFileRoute("/historia")({
   head: () => ({
@@ -37,17 +37,18 @@ function Historia() {
           </p>
           <p>
             Hoy seguimos armando todo a mano en Buenos Aires: imprimimos, cortamos, enrollamos y
-            atamos cada versículo. Cuidamos la etiqueta, el tul en la boca del frasco y la tarjeta de
-            dedicatoria, porque casi siempre lo que se compra acá es para regalar.
+            atamos cada versículo. Cuidamos la etiqueta, el tul en la boca del frasco y la tarjeta
+            de dedicatoria, porque casi siempre lo que se compra acá es para regalar.
           </p>
           <p>
-            Estamos creciendo de a poco hacia papelería devocional: anotadores, agendas, separadores y
-            stickers. Todo con la misma idea de fondo —que la Palabra acompañe el día a día.
+            Estamos creciendo de a poco hacia papelería devocional: anotadores, agendas, separadores
+            y stickers. Todo con la misma idea de fondo —que la Palabra acompañe el día a día.
           </p>
           <div className="hairline" />
           <p className="font-display text-xl text-ink">
-            “Porque yo sé los pensamientos que tengo acerca de vosotros, pensamientos de paz, y no de
-            mal, para daros el fin que esperáis.” <span className="text-sm">— Jeremías 29:11</span>
+            “Porque yo sé los pensamientos que tengo acerca de vosotros, pensamientos de paz, y no
+            de mal, para daros el fin que esperáis.”{" "}
+            <span className="text-sm">— Jeremías 29:11</span>
           </p>
           <Link
             to="/tienda"
@@ -57,22 +58,14 @@ function Historia() {
           </Link>
         </div>
 
-        <div className="space-y-5">
+        <div>
           <img
             src={PACKS_IMG}
             alt="Packs de regalo Tikva listos para entregar"
             width={720}
             height={960}
             loading="lazy"
-            className="paper-card label-notch w-full object-cover"
-          />
-          <img
-            src={NOTA_IMG}
-            alt="Papelito con un versículo del frasco"
-            width={720}
-            height={960}
-            loading="lazy"
-            className="paper-card label-notch w-full object-cover"
+            className="paper-card label-notch max-h-[540px] w-full object-cover"
           />
         </div>
       </div>
