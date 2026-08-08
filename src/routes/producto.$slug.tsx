@@ -1,0 +1,150 @@
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { useState } from "react";
+import { Check, Minus, Plus, Truck } from "lucide-react";
+import { toast } from "sonner";
+import { money } from "@/lib/format";
+import { productImage } from "@/lib/images";
+import { useTikva } from "@/lib/store";
+
+export const Route = createFileRoute("/producto/$slug")({
+  head: () => ({
+    meta: [
+      { title: "Producto · Tikva" },
+      { name: "description", content: "Detalle del producto, stock y compra por WhatsApp." },
+      { property: "og:title", content: "Producto · Tikva" },
+      { property: "og:description", content: "Regalería cristiana hecha a mano." },
+    ],
+  }),
+  component: DetalleProducto,
+  notFoundComponent: () => <p className="p-16 text-center">Producto no encontrado.</p>,
+});
+
+function DetalleProducto() {
+  const { slug } = Route.useParams();
+  const { productoPorSlug, agregar, negocio, ready } = useTikva();
+  const producto = productoPorSlug(slug);
+  const [cantidad, setCantidad] = useState(1);
+  const router = useRouter();
+
+  if (!producto) {
+    return (
+      <div className="mx-auto max-w-3xl px-5 py-24 text-center">
+        <h1 className="font-display text-3xl">
+          {ready ? "No encontramos ese producto" : "Cargando…"}
+        </h1>
+        <Link to="/tienda" className="mt-6 inline-flex text-sm underline underline-offset-8">
+          Volver a la tienda
+        </Link>
+      </div>
+    );
+  }
+
+  const agotado = producto.stock <= 0;
+
+  return (
+    <div className="mx-auto max-w-6xl px-5 py-14">
+      <nav className="text-xs text-muted-foreground">
+        <Link to="/tienda" className="hover:text-ink">Tienda</Link> / {producto.categoria}
+      </nav>
+
+      <div className="mt-8 grid gap-12 md:grid-cols-2">
+        <div className="paper-card label-notch overflow-hidden">
+          <img
+            src={productImage(producto.imagen)}
+            alt={producto.nombre}
+            width={1000}
+            height={1000}
+            className={`h-full w-full object-cover ${agotado ? "saturate-50" : ""}`}
+          />
+        </div>
+
+        <div>
+          <p className="eyebrow">{producto.categoria}</p>
+          <h1 className="mt-3 font-display text-4xl leading-tight">{producto.nombre}</h1>
+          <p className="mt-4 font-display text-2xl">{money(producto.precio)}</p>
+          <p className="mt-5 leading-relaxed text-muted-foreground">{producto.descripcion}</p>
+
+          <ul className="mt-7 space-y-2.5">
+            {producto.detalles.map((d) => (
+              <li key={d} className="flex items-start gap-2.5 text-sm">
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-sky-deep" />
+                <span className="text-muted-foreground">{d}</span>
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-9 paper-card label-notch p-5">
+            {agotado ? (
+              <div className="space-y-4">
+                <p className="text-sm">
+                  <strong>Sin stock por ahora.</strong> Lo armamos por encargo: escribinos y te
+                  reservamos el próximo lote.
+                </p>
+                <a
+                  href={`https://wa.me/${negocio.whatsapp}?text=${encodeURIComponent(
+                    `Hola Tikva! Quiero que me avisen cuando vuelva ${producto.nombre}.`,
+                  )}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex rounded-full bg-ink px-5 py-2.5 text-sm text-primary-foreground"
+                >
+                  Avisarme por WhatsApp
+                </a>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <button
+                      aria-label="Restar"
+                      onClick={() => setCantidad((c) => Math.max(1, c - 1))}
+                      className="grid h-9 w-9 place-items-center border border-border"
+                    >
+                      <Minus className="h-3.5 w-3.5" />
+                    </button>
+                    <span className="font-display text-lg">{cantidad}</span>
+                    <button
+                      aria-label="Sumar"
+                      onClick={() => setCantidad((c) => Math.min(producto.stock, c + 1))}
+                      className="grid h-9 w-9 place-items-center border border-border"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    {producto.stock} disponibles
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    onClick={() => {
+                      agregar(producto, cantidad);
+                      toast.success("Agregado al carrito", { description: producto.nombre });
+                    }}
+                    className="rounded-full bg-ink px-6 py-3 text-sm text-primary-foreground transition-transform hover:-translate-y-0.5"
+                  >
+                    Agregar al carrito
+                  </button>
+                  <button
+                    onClick={() => {
+                      agregar(producto, cantidad);
+                      router.navigate({ to: "/checkout" });
+                    }}
+                    className="rounded-full border border-ink px-6 py-3 text-sm transition-colors hover:bg-ink hover:text-primary-foreground"
+                  >
+                    Comprar ahora
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <p className="mt-6 flex items-center gap-2 text-xs text-muted-foreground">
+            <Truck className="h-4 w-4" />
+            Envío {money(negocio.envioCosto)} · gratis desde {money(negocio.envioGratisDesde)} · retiro en CABA sin cargo
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
