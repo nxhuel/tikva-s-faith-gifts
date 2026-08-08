@@ -1,0 +1,167 @@
+{
+  "negocio": {
+    "nombre": "TIKVA",
+    "rubro": "Regalería Cristiana",
+    "instagram": "tikva.regalos",
+    "whatsapp": "5491156582298",
+    "whatsappVisible": "11 5658-2298",
+    "envioCosto": 3500,
+    "envioGratisDesde": 45000
+  },
+  "usuarios": [
+    {
+      "id": "u-admin",
+      "nombre": "Equipo Tikva",
+      "email": "admin",
+      "password": "admin123",
+      "rol": "admin"
+    },
+    {
+      "id": "u-demo",
+      "nombre": "Melina Rivas",
+      "email": "melina@mail.com",
+      "password": "tikva123",
+      "rol": "cliente"
+    }
+  ],
+  "productos": [
+    {
+      "id": "p-365",
+      "slug": "frasco-365-versiculos",
+      "nombre": "Frasco 365 Versículos Bíblicos",
+      "resumen": "Un versículo por día, enrollado a mano y atado con hilo.",
+      "descripcion": "Nuestro frasco insignia: 365 papelitos con versículos elegidos y enrollados uno por uno. Etiqueta acuarelada en tonos celeste y crema, tapa dorada y tul en la boca del frasco. Pensado para abrir uno cada mañana y empezar el día con una Palabra.",
+      "detalles": [
+        "365 versículos enrollados a mano",
+        "Frasco de vidrio con tapa dorada y tul",
+        "Etiqueta acuarelada impresa en papel ilustración",
+        "Alto 11 cm · Diámetro 9 cm",
+        "Incluye tarjeta para dedicatoria"
+      ],
+      "precio": 18900,
+      "costo": 7400,
+      "stock": 14,
+      "categoria": "Frascos",
+      "imagen": "frasco-365",
+      "destacado": true,
+      "activo": true
+    },
+    {
+      "id": "p-anotadores",
+      "slug": "set-anotador-y-agenda",
+      "nombre": "Set Anotador + Agenda devocional",
+      "resumen": "Tapa dura crema, interior punteado y guía de lectura.",
+      "descripcion": "Set de anotador y agenda devocional con detalles en azul marino y lapicera a tono. Interior con espacio para notas de sermón, pedidos de oración y lectura diaria.",
+      "detalles": [
+        "Anotador A5 tapa dura",
+        "Agenda con guía de lectura anual",
+        "Lapicera azul incluida"
+      ],
+      "precio": 21500,
+      "costo": 9800,
+      "stock": 0,
+      "categoria": "Papelería",
+      "imagen": "anotadores",
+      "destacado": false,
+      "activo": true
+    },
+    {
+      "id": "p-separadores",
+      "slug": "separadores-y-stickers",
+      "nombre": "Separadores + Stickers acuarela",
+      "resumen": "Cuatro separadores con cinta y dos planchas de stickers.",
+      "descripcion": "Separadores de libro en papel ilustración con cinta de gasa y planchas de stickers en acuarela celeste y dorado. Ideales para marcar tu Biblia o regalar en un pack.",
+      "detalles": [
+        "4 separadores 5 x 16 cm",
+        "2 planchas de stickers troquelados",
+        "Terminación mate con detalles dorados"
+      ],
+      "precio": 8900,
+      "costo": 3200,
+      "stock": 0,
+      "categoria": "Papelería",
+      "imagen": "separadores",
+      "destacado": false,
+      "activo": true
+    },
+    {
+      "id": "p-pack",
+      "slug": "pack-regalo-tikva",
+      "nombre": "Pack Regalo Tikva",
+      "resumen": "Frasco + tarjeta + bolsa de regalo armada a mano.",
+      "descripcion": "El frasco 365 presentado en bolsa translúcida con moño, viruta de papel, bombones y tarjeta escrita a mano. Listo para entregar.",
+      "detalles": [
+        "Incluye Frasco 365 Versículos",
+        "Bolsa translúcida con moño y viruta",
+        "Tarjeta con dedicatoria a mano",
+        "Bombones surtidos"
+      ],
+      "precio": 26900,
+      "costo": 11500,
+      "stock": 6,
+      "categoria": "Packs",
+      "imagen": "packs",
+      "destacado": true,
+      "activo": true
+    }
+  ],
+  "promos": [
+    {
+      "codigo": "TIKVA10",
+      "descripcion": "10% en toda la tienda",
+      "porcentaje": 10,
+      "activa": true
+    },
+    {
+      "codigo": "DIADELAMADRE",
+      "descripcion": "15% en packs de regalo",
+      "porcentaje": 15,
+      "activa": false
+    }
+  ],
+  "pedidos": [
+    {
+      "id": "TK-1042",
+      "fecha": "2026-07-28T14:20:00.000Z",
+      "usuarioId": "u-demo",
+      "cliente": {
+        "nombre": "Melina Rivas",
+        "telefono": "1145887711",
+        "email": "melina@mail.com",
+        "entrega": "envio",
+        "direccion": "Av. Rivadavia 4820, CABA",
+        "notas": "Es para un cumpleaños, agregar dedicatoria."
+      },
+      "items": [{ "id": "p-365", "nombre": "Frasco 365 Versículos Bíblicos", "precio": 18900, "cantidad": 1 }],
+      "subtotal": 18900,
+      "descuento": 0,
+      "envio": 3500,
+      "total": 22400,
+      "estado": "entregado"
+    },
+    {
+      "id": "TK-1043",
+      "fecha": "2026-08-03T18:05:00.000Z",
+      "usuarioId": null,
+      "cliente": {
+        "nombre": "Rocío Paz",
+        "telefono": "1166003321",
+        "email": "rocio@mail.com",
+        "entrega": "retiro",
+        "direccion": "",
+        "notas": ""
+      },
+      "items": [{ "id": "p-pack", "nombre": "Pack Regalo Tikva", "precio": 26900, "cantidad": 2 }],
+      "subtotal": 53800,
+      "descuento": 5380,
+      "envio": 0,
+      "total": 48420,
+      "estado": "preparando"
+    }
+  ],
+  "gastos": [
+    { "id": "g-1", "fecha": "2026-07-20T00:00:00.000Z", "concepto": "Compra de frascos x24", "categoria": "Insumos", "monto": 96000 },
+    { "id": "g-2", "fecha": "2026-07-22T00:00:00.000Z", "concepto": "Impresión de etiquetas", "categoria": "Impresión", "monto": 28500 },
+    { "id": "g-3", "fecha": "2026-08-01T00:00:00.000Z", "concepto": "Publicidad Instagram", "categoria": "Marketing", "monto": 15000 }
+  ]
+}
