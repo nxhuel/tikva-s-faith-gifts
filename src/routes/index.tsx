@@ -109,7 +109,6 @@ function Home() {
         </div>
       </section>
 
-      {/* PROCESO */}
       <section className="border-y border-border sky-panel">
         <div className="mx-auto max-w-6xl px-5 py-20">
           <p className="eyebrow">Cómo se hace</p>
