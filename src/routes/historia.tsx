@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { PACKS_IMG } from "@/lib/images";
+import tikvaNosotrosImg from "@/assets/tikva-nosotros.jpeg"
 
 export const Route = createFileRoute("/historia")({
   head: () => ({
@@ -60,7 +60,7 @@ function Historia() {
 
         <div>
           <img
-            src={PACKS_IMG}
+            src={tikvaNosotrosImg}
             alt="Packs de regalo Tikva listos para entregar"
             width={720}
             height={960}
