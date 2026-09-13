@@ -15,6 +15,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { TikvaProvider } from "@/lib/store";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { WhatsAppFab } from "@/components/whatsapp-fab";
 
 function NotFoundComponent() {
   return (
@@ -127,6 +128,7 @@ function RootComponent() {
             <Outlet />
           </main>
           <SiteFooter />
+          <WhatsAppFab />
         </div>
         <Toaster />
       </TikvaProvider>

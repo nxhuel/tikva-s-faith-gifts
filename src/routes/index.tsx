@@ -148,7 +148,7 @@ function Home() {
             “Mirá cómo la chica va leyendo cada día un versículo de tu frasquito. Gloria a Dios le
             doy.”
           </blockquote>
-          <p className="mt-5 text-sm text-muted-foreground">— Mensaje de una clienta, julio 2026</p>
+          <p className="mt-5 text-sm text-muted-foreground">— Lucía</p>
           <div className="mt-9 hairline" />
           <p className="mt-8 max-w-md text-sm leading-relaxed text-muted-foreground">
             Cada pedido se arma por encargo. Si querés algo especial —colores, cantidad, dedicatoria,

@@ -52,9 +52,10 @@ export function SiteFooter() {
           </div>
         </div>
       </div>
-      <div className="border-t border-border/70 px-5 py-5 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} Tikva Regalería Cristiana · Hecho a mano, con esperanza.
-      </div>
+      <footer className="mx-auto flex max-w-6xl items-center justify-between border-t border-border/70 px-5 py-5 text-xs text-muted-foreground">
+        <span>© {new Date().getFullYear()} Tikva Regalería Cristiana · Hecho a mano, con esperanza.</span>
+        <span>Desarrollado por Clik — Tikva</span>
+      </footer>
     </footer>
   );
 }
