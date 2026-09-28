@@ -1,0 +1,22 @@
+{
+  "name": "tikva-backend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "node --import tsx src/index.ts",
+    "db:migrate": "tsx src/db-migrate.ts"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "helmet": "^8.0.0",
+    "postgres": "^3.4.5"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2"
+  },
+  "optionalDependencies": {
+    "tsx": "^4.19.2"
+  }
+}

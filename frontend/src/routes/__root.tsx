@@ -11,8 +11,7 @@ import { useEffect, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
-import { TikvaProvider } from "@/lib/store";
+import { reportLovableError } from "../lib/lovable-error-reporting";import { TikvaProvider } from "@/lib/store";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { WhatsAppFab } from "@/components/whatsapp-fab";
@@ -120,7 +119,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TikvaProvider>
+      <TikvaProvider backendUrl={"/api"}>
         <div className="flex min-h-screen flex-col">
           <SiteHeader />
           <main className="flex-1">
@@ -135,3 +134,4 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
+

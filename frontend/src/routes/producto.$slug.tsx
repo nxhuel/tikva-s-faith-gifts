@@ -1,10 +1,11 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { Check, Minus, Plus, Truck } from "lucide-react";
+import { WhatsAppIcon } from "@/components/whatsapp-icon";
 import { toast } from "sonner";
 import { money } from "@/lib/format";
 import { productImage } from "@/lib/images";
-import { textoDescuento, useTikva } from "@/lib/store";
+import { linkWhatsapp, mensajeProducto, textoDescuento, useTikva } from "@/lib/store";
 
 export const Route = createFileRoute("/producto/$slug")({
   head: () => ({
@@ -48,6 +49,20 @@ function DetalleProducto() {
   const enDescuento = descuento && final < producto.precio;
   const imagenes = producto.imagenes.length > 0 ? producto.imagenes : [productImage("")];
   const activaClamp = Math.min(activa, imagenes.length - 1);
+  /** URL del producto para que el mensaje de WhatsApp lo incluya (solo cliente). */
+  const urlProducto = typeof window !== "undefined" ? window.location.href : undefined;
+  const linkConsulta = linkWhatsapp(
+    negocio.whatsapp,
+    mensajeProducto(producto, negocio, {
+      cantidad,
+      precio: final,
+      ...(urlProducto ? { url: urlProducto } : {}),
+    }),
+  );
+  const linkAviso = linkWhatsapp(
+    negocio.whatsapp,
+    mensajeProducto(producto, negocio, { avisoStock: true }),
+  );
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-14">
@@ -127,9 +142,7 @@ function DetalleProducto() {
                   reservamos el próximo lote.
                 </p>
                 <a
-                  href={`https://wa.me/${negocio.whatsapp}?text=${encodeURIComponent(
-                    `Hola Tikva! Quiero que me avisen cuando vuelva ${producto.nombre}.`,
-                  )}`}
+                  href={linkAviso}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex rounded-full bg-ink px-5 py-2.5 text-sm text-primary-foreground"
@@ -180,6 +193,15 @@ function DetalleProducto() {
                   >
                     Comprar ahora
                   </button>
+                  <a
+                    href={linkConsulta}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 rounded-full border border-sky-deep px-6 py-3 text-sm text-sky-deep transition-colors hover:bg-sky-deep hover:text-primary-foreground"
+                  >
+                    <WhatsAppIcon className="h-4 w-4" />
+                    Consultar por WhatsApp
+                  </a>
                 </div>
               </div>
             )}

@@ -12,4 +12,12 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  // Proxy de /api al backend Express (válido en build Nitro y en dev).
+  nitro: {
+    routeRules: {
+      "/api/**": {
+        proxy: `${process.env.BACKEND_ORIGIN ?? "http://localhost:3001"}/api/**`,
+      },
+    },
+  },
 });

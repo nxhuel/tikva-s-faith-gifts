@@ -35,38 +35,35 @@ function Ingresar() {
           Guardá tus datos para comprar más rápido y ver el estado de cada pedido. Si sos del equipo,
           usá tu usuario de administración.
         </p>
-        <div className="mt-8 label-notch bg-secondary p-4 text-xs leading-relaxed text-muted-foreground">
-          <p className="uppercase tracking-[0.2em]">Accesos de prueba</p>
-          <p className="mt-2">Admin: <strong>admin</strong> / <strong>admin123</strong></p>
-          <p>Clienta: <strong>melina@mail.com</strong> / <strong>tikva123</strong></p>
-        </div>
       </div>
 
       <form
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
-          const fd = new FormData(e.currentTarget);
+          const form = e.currentTarget;
+          const fd = new FormData(form);
           if (modo === "login") {
-            const r = ingresar(String(fd.get("email")), String(fd.get("password")));
+            const r = await ingresar(String(fd.get("email")), String(fd.get("password")));
             if (!r.ok) {
-              toast.error(r.mensaje);
+              toast.error(r.mensaje || "No se pudo iniciar sesión");
               return;
             }
             toast.success(r.mensaje);
             router.navigate({ to: r.usuario?.rol === "admin" ? "/admin" : "/cuenta" });
           } else {
-            const r = registrar(
+            const r = await registrar(
               String(fd.get("nombre")),
               String(fd.get("email")),
               String(fd.get("password")),
             );
             if (!r.ok) {
-              toast.error(r.mensaje);
+              toast.error(r.mensaje || "No se pudo crear la cuenta");
               return;
             }
             toast.success(r.mensaje);
             router.navigate({ to: "/cuenta" });
           }
+          form.reset();
         }}
         className="paper-card label-notch p-7"
       >

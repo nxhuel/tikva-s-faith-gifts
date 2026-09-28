@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { Instagram, MessageCircle } from "lucide-react";
-import { useTikva } from "@/lib/store";
+import { InstagramIcon } from "@/components/instagram-icon";
+import { PaymentMethods } from "@/components/payment-methods";
+import { WhatsAppIcon } from "@/components/whatsapp-icon";
+import { linkWhatsapp, numeroWhatsapp, useTikva } from "@/lib/store";
 import { LOGO_IMG } from "@/lib/images";
 
 export function SiteFooter() {
@@ -33,12 +35,13 @@ export function SiteFooter() {
           <p className="eyebrow">Escribinos</p>
           <div className="mt-4 flex flex-col gap-2 text-sm">
             <a
-              href={`https://wa.me/${negocio.whatsapp}`}
+              href={linkWhatsapp(negocio.whatsapp)}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-2 text-muted-foreground hover:text-ink"
             >
-              <MessageCircle className="h-4 w-4" /> {negocio.whatsappVisible}
+              <WhatsAppIcon className="h-4 w-4 text-[#25D366]" />
+              {negocio.whatsappVisible || numeroWhatsapp(negocio.whatsapp)}
             </a>
             <a
               href={`https://instagram.com/${negocio.instagram}`}
@@ -46,10 +49,12 @@ export function SiteFooter() {
               rel="noreferrer"
               className="inline-flex items-center gap-2 text-muted-foreground hover:text-ink"
             >
-              <Instagram className="h-4 w-4" /> @{negocio.instagram}
+              <InstagramIcon className="h-4 w-4" /> @{negocio.instagram}
             </a>
             <p className="text-muted-foreground">Envíos a todo el país · Retiro en CABA</p>
           </div>
+
+          <PaymentMethods className="mt-6 border-t border-border/70 pt-5" />
         </div>
       </div>
       <footer className="mx-auto flex max-w-6xl items-center justify-between border-t border-border/70 px-5 py-5 text-xs text-muted-foreground">

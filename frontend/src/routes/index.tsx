@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowUpRight, Hand, Heart, PenLine, Scroll } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
 import { HERO_IMG, NOTA_IMG } from "@/lib/images";
-import { useTikva } from "@/lib/store";
+import { linkWhatsapp, useTikva } from "@/lib/store";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -66,7 +66,7 @@ function Home() {
                 <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </Link>
               <a
-                href={`https://wa.me/${negocio.whatsapp}`}
+                href={linkWhatsapp(negocio.whatsapp, `Hola ${negocio.nombre}! Quería hacerles una consulta.`)}
                 target="_blank"
                 rel="noreferrer"
                 className="text-sm underline decoration-sky-deep decoration-2 underline-offset-8"

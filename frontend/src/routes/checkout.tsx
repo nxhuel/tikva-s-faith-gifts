@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { MessageCircle } from "lucide-react";
+import { WhatsAppIcon } from "@/components/whatsapp-icon";
+import { toast } from "sonner";
 import { z } from "zod";
 import { money } from "@/lib/format";
 import { linkWhatsapp, mensajeWhatsapp, useTikva, type Pedido } from "@/lib/store";
@@ -27,11 +28,11 @@ const schema = z.object({
 });
 
 function Checkout() {
-  const { carrito, subtotal, descuento, envio, total, crearPedido, vaciar, negocio, usuario } =
-    useTikva();
+  const { carrito, subtotal, descuento, envio, total, crearPedido, negocio, usuario } = useTikva();
   const [entrega, setEntrega] = useState<"envio" | "retiro">("envio");
   const [errores, setErrores] = useState<Record<string, string>>({});
   const [pedido, setPedido] = useState<Pedido | null>(null);
+  const [enviando, setEnviando] = useState(false);
 
   if (pedido) {
     const texto = mensajeWhatsapp(pedido, negocio);
@@ -66,7 +67,7 @@ function Checkout() {
           rel="noreferrer"
           className="mt-8 inline-flex items-center gap-2 rounded-full bg-ink px-7 py-3.5 text-sm text-primary-foreground transition-transform hover:-translate-y-0.5"
         >
-          <MessageCircle className="h-4 w-4" />
+          <WhatsAppIcon className="h-4 w-4" />
           Confirmar por WhatsApp
         </a>
         <div className="mt-6">
@@ -89,8 +90,9 @@ function Checkout() {
     );
   }
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (enviando) return;
     const fd = new FormData(e.currentTarget);
     const data = {
       nombre: String(fd.get("nombre") ?? ""),
@@ -112,9 +114,19 @@ function Checkout() {
       return;
     }
     setErrores({});
-    const nuevo = crearPedido(parsed.data);
-    setPedido(nuevo);
-    vaciar();
+    setEnviando(true);
+    try {
+      // Sin `await` acá el estado guardaba una Promise y la pantalla de
+      // confirmación se rompía al leer `pedido.items`.
+      const nuevo = await crearPedido(parsed.data);
+      setPedido(nuevo);
+    } catch (err: any) {
+      toast.error("No se pudo registrar el pedido", {
+        description: err?.message ?? "Revisá tu conexión e intentá de nuevo.",
+      });
+    } finally {
+      setEnviando(false);
+    }
   };
 
   const field =
@@ -219,8 +231,11 @@ function Checkout() {
             <span className="eyebrow">Total</span>
             <span className="font-display text-2xl">{money(total(entrega))}</span>
           </div>
-          <button className="mt-6 w-full rounded-full bg-ink py-3 text-sm text-primary-foreground">
-            Generar pedido
+          <button
+            disabled={enviando}
+            className="mt-6 w-full rounded-full bg-ink py-3 text-sm text-primary-foreground disabled:opacity-60"
+          >
+            {enviando ? "Generando pedido…" : "Generar pedido"}
           </button>
           <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">
             En el próximo paso te abrimos WhatsApp con el detalle listo para enviar.
