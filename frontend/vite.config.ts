@@ -6,17 +6,27 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
+/**
+ * URL base del backend Express, normalizada: sin barra final y sin un "/api"
+ * pegado de más. El proxy ya agrega el `/api/**` solo, así que si BACKEND_ORIGIN
+ * viene como `https://mi-api.onrender.com/` o `https://mi-api.onrender.com/api`
+ * el request salía a `/api/api/...` y el API respondía 404 en todas las llamadas.
+ */
+const backendOrigin = (process.env["BACKEND_ORIGIN"] ?? "http://localhost:3001")
+  .trim()
+  .replace(/\/+$/, "")
+  .replace(/\/api$/, "");
+
 export default defineConfig({
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-    // nitro/vite builds from this
     server: { entry: "server" },
   },
   // Proxy de /api al backend Express (válido en build Nitro y en dev).
   nitro: {
     routeRules: {
       "/api/**": {
-        proxy: `${process.env.BACKEND_ORIGIN ?? "http://localhost:3001"}/api/**`,
+        proxy: `${backendOrigin}/api/**`,
       },
     },
   },
