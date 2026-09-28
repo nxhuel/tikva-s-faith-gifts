@@ -1,3 +1,9 @@
+# Stack de desarrollo local: frontend + api + base de datos.
+#
+# Las credenciales de la base local son FIJAS (tikva/tikva/tikva) a propósito:
+# el archivo .env puede tener las credenciales de producción (Render) y así no
+# rompe el entorno local. En Render, en cambio, las variables se cargan a mano
+# en el panel del servicio (Render NO lee archivos .env).
 services:
   frontend:
     build:
@@ -16,8 +22,8 @@ services:
 
   api:
     build:
-      context: .
-      dockerfile: backend/Dockerfile
+      context: ./backend
+      dockerfile: Dockerfile
     restart: unless-stopped
     ports:
       - "${API_PORT:-3001}:3001"
@@ -26,10 +32,13 @@ services:
       - PORT=3001
       - DB_HOST=db
       - DB_PORT=5432
-      - DB_NAME=${DB_NAME:-tikva}
-      - DB_USER=${DB_USER:-tikva}
-      - DB_PASSWORD=${DB_PASSWORD:-tikva}
-      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173}
+      - DB_NAME=tikva
+      - DB_USER=tikva
+      - DB_PASSWORD=tikva
+      # Vacías a propósito: si el .env trae la URL de Render, se ignora acá.
+      - DATABASE_URL=
+      - DB_SSL=false
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173,*}
       - CLOUDINARY_URL=${CLOUDINARY_URL:-}
       - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME:-}
       - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY:-}
@@ -42,15 +51,15 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      - POSTGRES_USER=${DB_USER:-tikva}
-      - POSTGRES_PASSWORD=${DB_PASSWORD:-tikva}
-      - POSTGRES_DB=${DB_NAME:-tikva}
+      - POSTGRES_USER=tikva
+      - POSTGRES_PASSWORD=tikva
+      - POSTGRES_DB=tikva
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - "${LOCAL_DB_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-tikva} -d ${DB_NAME:-tikva}"]
+      test: ["CMD-SHELL", "pg_isready -U tikva -d tikva"]
       interval: 5s
       retries: 6
       start_period: 5s

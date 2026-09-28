@@ -4,9 +4,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends dumb-init && rm
 ENV NODE_ENV=production
 WORKDIR /app/backend
 
-COPY backend/package.json backend/tsconfig.json ./
-COPY backend/src ./src
-COPY backend/entrypoint.sh ./
+# El contexto de build es la carpeta backend/ (en Render: Root Directory = backend)
+COPY package.json tsconfig.json ./
+COPY src ./src
+COPY entrypoint.sh ./
 
 RUN npm install --omit=dev --include=dev && chmod +x entrypoint.sh
 

@@ -3,6 +3,7 @@ import express from "express";
 import helmet from "helmet";
 import postgres from "postgres";
 
+import { opcionesConexion } from "./dbconfig.js";
 import { inicializarEsquema } from "./init.js";
 import { cloudinaryConfigurado, cloudinaryPublico, firmarParametros } from "./cloudinary.js";
 import type { Request, Response, NextFunction } from "express";
@@ -45,14 +46,7 @@ app.use(cors({ origin: true }));
 app.use(express.json({ limit: "1mb" }));
 
 function makeClient() {
-  return postgres({
-    host: process.env.DB_HOST ?? "db",
-    port: Number(process.env.DB_PORT ?? 5432),
-    database: process.env.DB_NAME ?? "tikva",
-    user: process.env.DB_USER ?? "tikva",
-    password: process.env.DB_PASSWORD ?? "tikva",
-    max: Number(process.env.DB_POOL ?? 10),
-  });
+  return postgres(opcionesConexion());
 }
 
 /**
@@ -99,6 +93,26 @@ app.use(async (req: Request, _res: Response, next: NextFunction) => {
     }
   }
   next();
+});
+
+// ---------------- health ----------------
+/**
+ * Chequeo de salud (Render lo usa como Health Check Path).
+ * Responde 200 mientras el proceso esté vivo e informa si la base contesta;
+ * no devuelve error por la base para no entrar en reinicio en loop.
+ */
+app.get("/api/health", async (_req, res) => {
+  const client = makeClient();
+  let base = false;
+  try {
+    await client`SELECT 1`;
+    base = true;
+  } catch (error) {
+    console.error("Health check: la base no respondió", error);
+  } finally {
+    await client.end();
+  }
+  res.json({ ok: true, base });
 });
 
 // ---------------- negocio ----------------
