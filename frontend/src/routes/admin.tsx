@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useRef, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { Pencil, Plus, Star, Trash2, Upload, X } from "lucide-react";
+import { CambiarClave } from "@/components/cambiar-clave";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import { fecha, money } from "@/lib/format";
 import { productImage } from "@/lib/images";
@@ -35,10 +36,12 @@ const tabs = [
   "Productos",
   "Categorías",
   "Clientes",
+  "Usuarios",
   "Descuentos",
   "Pedidos",
   "Gastos",
   "Promos",
+  "Seguridad",
 ] as const;
 
 const field =
@@ -111,10 +114,12 @@ function Admin() {
         {tab === "Productos" && <ProductosTab />}
         {tab === "Categorías" && <CategoriasTab />}
         {tab === "Clientes" && <ClientesTab />}
+        {tab === "Usuarios" && <UsuariosTab />}
         {tab === "Descuentos" && <DescuentosTab />}
         {tab === "Pedidos" && <PedidosTab />}
         {tab === "Gastos" && <GastosTab />}
         {tab === "Promos" && <PromosTab />}
+        {tab === "Seguridad" && <SeguridadTab />}
       </div>
     </div>
   );
@@ -1102,6 +1107,76 @@ function ClientesTab() {
   );
 }
 
+/* -------------------------------- Usuarios -------------------------------- */
+
+function UsuariosTab() {
+  const { db, resetearClave } = useTikva();
+  const [nuevaClave, setNuevaClave] = useState<{ id: string; clave: string } | null>(null);
+
+  const resetear = async (id: string, nombre: string) => {
+    if (!confirm(`¿Estás seguro de restablecer la contraseña de ${nombre}?`)) return;
+    const res = await resetearClave(id);
+    if (res.ok && res.password) {
+      setNuevaClave({ id, clave: res.password });
+      toast.success(res.mensaje);
+    } else {
+      toast.error(res.mensaje);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="font-display text-lg">Usuarios ({db.usuarios.length})</h2>
+      </div>
+
+      <div className="space-y-3">
+        {db.usuarios.map((u) => (
+          <div key={u.id} className="paper-card label-notch flex flex-wrap items-center gap-4 p-4">
+            <div className="flex-1">
+              <p className="font-display">
+                {u.nombre}
+                {u.rol === "admin" && (
+                  <span className="ml-2 inline-flex items-center rounded-full bg-sky-deep/10 px-2 py-0.5 text-[10px] font-bold tracking-wider text-sky-deep">
+                    ADMIN
+                  </span>
+                )}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {u.email} · {u.telefono || "sin teléfono"}
+              </p>
+            </div>
+
+            {nuevaClave?.id === u.id ? (
+              <div className="flex items-center gap-2 rounded-md bg-green-50 px-3 py-2 text-green-900 border border-green-200">
+                <span className="text-sm font-mono">{nuevaClave.clave}</span>
+                <button
+                  onClick={() => setNuevaClave(null)}
+                  className="text-green-700 hover:text-green-900"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => resetear(u.id, u.nombre)}
+                className="rounded border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted"
+              >
+                Restablecer contraseña
+              </button>
+            )}
+          </div>
+        ))}
+        {db.usuarios.length === 0 && (
+          <p className="text-sm text-muted-foreground">
+            Todavía no hay usuarios registrados.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* -------------------------------- Descuentos ------------------------------- */
 
 function DescuentosTab() {
@@ -1759,6 +1834,49 @@ function PromosTab() {
             </div>
           ))}
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------- Seguridad -------------------------------- */
+
+function SeguridadTab() {
+  const { usuario } = useTikva();
+
+  return (
+    <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
+      <div className="paper-card label-notch h-fit p-6">
+        <h2 className="font-display text-lg">Mi cuenta</h2>
+        <dl className="mt-5 space-y-3">
+          {[
+            { l: "Nombre", v: usuario?.nombre ?? "" },
+            { l: "Usuario", v: usuario?.email ?? "" },
+            {
+              l: "Rol",
+              v: usuario?.rol === "admin" ? "Administradora" : "Cliente",
+            },
+          ].map((dato) => (
+            <div key={dato.l}>
+              <dt className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                {dato.l}
+              </dt>
+              <dd className="text-sm">{dato.v}</dd>
+            </div>
+          ))}
+        </dl>
+        <p className="mt-6 text-xs leading-relaxed text-muted-foreground">
+          Desde acá sólo se cambia la contraseña de la cuenta con la que estás ingresada: las de las
+          clientas no se pueden ver ni modificar desde el panel.
+        </p>
+      </div>
+
+      <div className="paper-card label-notch p-6">
+        <h2 className="font-display text-lg">Cambiar contraseña</h2>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Elegí una que no uses en otro lado.
+        </p>
+        <CambiarClave className="mt-5" />
       </div>
     </div>
   );

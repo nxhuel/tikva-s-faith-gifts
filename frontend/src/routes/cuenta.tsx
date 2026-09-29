@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { CambiarClave } from "@/components/cambiar-clave";
 import { fecha, money } from "@/lib/format";
 import { linkWhatsapp, mensajeWhatsapp, useTikva } from "@/lib/store";
 
@@ -97,6 +98,14 @@ function Cuenta() {
           Ver la tienda
         </Link>
       )}
+
+      <div className="paper-card label-notch mt-14 max-w-xl p-6">
+        <h2 className="font-display text-lg">Cambiar contraseña</h2>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Tu cuenta es {usuario.email}. Elegí una contraseña que no uses en otro lado.
+        </p>
+        <CambiarClave className="mt-5" />
+      </div>
     </div>
   );
 }

@@ -14,8 +14,8 @@ export type Usuario = {
   id: string;
   nombre: string;
   email: string;
-  password: string;
   rol: Rol;
+  telefono?: string | null;
 };
 
 export type Categoria = {
@@ -321,6 +321,7 @@ type Ctx = {
     password: string,
   ) => Promise<{ ok: boolean; mensaje: string; usuario?: Usuario }>;
   registrar: (nombre: string, email: string, password: string) => Promise<{ ok: boolean; mensaje: string }>;
+  cambiarClave: (actual: string, nueva: string) => Promise<{ ok: boolean; mensaje: string }>;
   salir: () => Promise<void>;
   crearPedido: (cliente: Pedido["cliente"]) => Promise<Pedido>;
   cambiarEstado: (id: string, estado: EstadoPedido) => Promise<void>;
@@ -339,6 +340,7 @@ type Ctx = {
   borrarGasto: (id: string) => Promise<void>;
   guardarPromo: (p: Promo) => Promise<void>;
   borrarPromo: (codigo: string) => Promise<void>;
+  resetearClave: (id: string) => Promise<{ ok: boolean; password?: string; mensaje?: string }>;
   reset: () => void;
 };
 
@@ -356,7 +358,7 @@ export function TikvaProvider({ children, backendUrl }: { children: ReactNode; b
   const recargar = useCallback(async () => {
     if (typeof window === "undefined") return;
     try {
-      const [negocio, categorias, productos, clientes, descuentos, promos, pedidos, gastos] =
+      const [negocio, categorias, productos, clientes, descuentos, promos, pedidos, gastos, usuarios] =
         await Promise.all([
           api("/negocio"),
           api("/categorias"),
@@ -366,6 +368,7 @@ export function TikvaProvider({ children, backendUrl }: { children: ReactNode; b
           api("/promos"),
           api("/pedidos"),
           api("/gastos"),
+          api("/usuarios"),
         ]);
       setDb((prev) => ({
         ...prev,
@@ -377,6 +380,7 @@ export function TikvaProvider({ children, backendUrl }: { children: ReactNode; b
         promos: promos as Promo[],
         pedidos: pedidos as Pedido[],
         gastos: gastos as Gasto[],
+        usuarios: usuarios as Usuario[],
       }));
     } catch (e: any) {
       console.warn("No se pudo conectar con el backend:", e?.message ?? e);
@@ -531,6 +535,30 @@ export function TikvaProvider({ children, backendUrl }: { children: ReactNode; b
       return { ok: true, mensaje: body.mensaje };
     } catch (e: any) {
       return { ok: false, mensaje: e?.message ?? "Error al crear la cuenta" };
+    }
+  }, []);
+
+  /** Cambia la contraseña de la persona que tiene la sesión abierta. */
+  const cambiarClave = useCallback(async (actual: string, nueva: string) => {
+    try {
+      const body = await api("/auth/password", {
+        method: "PATCH",
+        body: JSON.stringify({ actual, nueva }),
+      });
+      return { ok: true, mensaje: String(body?.mensaje ?? "Contraseña actualizada.") };
+    } catch (e: any) {
+      return { ok: false, mensaje: e?.message ?? "No se pudo cambiar la contraseña" };
+    }
+  }, []);
+
+  const resetearClave = useCallback(async (id: string) => {
+    try {
+      const body = await api(`/usuarios/${id}/reset-password`, {
+        method: "POST",
+      });
+      return { ok: true, password: body.password, mensaje: String(body?.mensaje ?? "Contraseña actualizada.") };
+    } catch (e: any) {
+      return { ok: false, mensaje: e?.message ?? "No se pudo cambiar la contraseña" };
     }
   }, []);
 
@@ -709,6 +737,8 @@ export function TikvaProvider({ children, backendUrl }: { children: ReactNode; b
     quitarCupon: () => setCupon(null),
     ingresar,
     registrar,
+    cambiarClave,
+    resetearClave,
     salir,
     crearPedido,
     cambiarEstado,

@@ -5,6 +5,7 @@ import postgres from "postgres";
 
 import { opcionesConexion } from "./dbconfig.js";
 import { inicializarEsquema } from "./init.js";
+import { hashearClave, verificarClave } from "./passwords.js";
 import { cloudinaryConfigurado, cloudinaryPublico, firmarParametros } from "./cloudinary.js";
 import type { Request, Response, NextFunction } from "express";
 
@@ -800,14 +801,18 @@ app.post("/api/auth/login", async (req, res) => {
   if (!email || !password) return res.status(400).json({ ok: false, mensaje: "Completá email y contraseña" });
   const client = makeClient();
   try {
-    const [row] = await client<{ id: string; nombre: string; email: string; password: string; rol: string }[]>`SELECT * FROM usuarios WHERE lower(email) = lower(${email}) AND password = ${password}`;
-    if (!row) return res.status(401).json({ ok: false, mensaje: "Usuario o contraseña incorrectos" });
+    // Se busca por email y la contraseña se compara contra el hash scrypt
+    // (nunca con un `password = ...` en SQL: así no viaja en texto plano).
+    const [row] = await client<{ id: string; nombre: string; email: string; password: string; rol: string }[]>`SELECT * FROM usuarios WHERE lower(email) = lower(${email})`;
+    if (!row || !(await verificarClave(password, row.password))) {
+      return res.status(401).json({ ok: false, mensaje: "Usuario o contraseña incorrectos" });
+    }
     const sessionId = crypto.randomUUID();
     await client`INSERT INTO sesiones (id, usuario_id, created_at, expires_at) VALUES (${sessionId}, ${row.id}, now(), now() + interval '2 days') ON CONFLICT DO NOTHING`;
     res.json({
       ok: true,
       mensaje: `Bienvenida, ${row.nombre}.`,
-      usuario: { id: row.id, nombre: row.nombre, email: row.email, password: row.password, rol: row.rol },
+      usuario: { id: row.id, nombre: row.nombre, email: row.email, rol: row.rol },
       sessionId,
     });
   } finally {
@@ -818,20 +823,23 @@ app.post("/api/auth/login", async (req, res) => {
 app.post("/api/auth/register", async (req, res) => {
   const body = req.body as { nombre: string; email: string; password: string };
   if (!body.nombre || body.nombre.trim().length < 2) return res.status(400).json({ ok: false, mensaje: "Nombre inválido" });
+  if (!body.password || body.password.length < 6) {
+    return res.status(400).json({ ok: false, mensaje: "La contraseña necesita al menos 6 caracteres" });
+  }
   const client = makeClient();
   try {
     const exists = await client<{ c: number }[]>`SELECT count(*)::int AS c FROM usuarios WHERE lower(email) = lower(${body.email})`;
     if (exists[0]?.c > 0) return res.status(400).json({ ok: false, mensaje: "Ya existe una cuenta con ese email" });
     const id = crypto.randomUUID().slice(0, 8);
     const cid = crypto.randomUUID().slice(0, 8);
-    await client`INSERT INTO usuarios (id, nombre, email, password, rol) VALUES (${id}, ${body.nombre.trim()}, ${body.email.trim().toLowerCase()}, ${body.password}, 'cliente')`;
+    await client`INSERT INTO usuarios (id, nombre, email, password, rol) VALUES (${id}, ${body.nombre.trim()}, ${body.email.trim().toLowerCase()}, ${await hashearClave(body.password)}, 'cliente')`;
     await client`INSERT INTO clientes (id, nombre, email, fecha_alta) VALUES (${cid}, ${body.nombre.trim()}, ${body.email.trim().toLowerCase()}, now()) ON CONFLICT DO NOTHING`;
     const sessionId = crypto.randomUUID();
     await client`INSERT INTO sesiones (id, usuario_id, created_at, expires_at) VALUES (${sessionId}, ${id}, now(), now() + interval '2 days') ON CONFLICT DO NOTHING`;
     res.status(201).json({
       ok: true,
       mensaje: "Cuenta creada.",
-      usuario: { id, nombre: body.nombre.trim(), email: body.email.trim().toLowerCase(), password: body.password, rol: "cliente" },
+      usuario: { id, nombre: body.nombre.trim(), email: body.email.trim().toLowerCase(), rol: "cliente" },
       sessionId,
     });
   } finally {
@@ -848,7 +856,7 @@ app.get("/api/auth/me", async (req, res) => {
     if (!s) return res.status(401).json({ ok: false, mensaje: "Sesión inválida" });
     const [u] = await client<{ id: string; nombre: string; email: string; password: string; rol: string }[]>`SELECT * FROM usuarios WHERE id = ${s.usuario_id}`;
     if (!u) return res.status(401).json({ ok: false, mensaje: "Sesión inválida" });
-    res.json({ ok: true, usuario: { id: u.id, nombre: u.nombre, email: u.email, password: u.password, rol: u.rol } });
+    res.json({ ok: true, usuario: { id: u.id, nombre: u.nombre, email: u.email, rol: u.rol } });
   } finally {
     await client.end();
   }
@@ -856,6 +864,118 @@ app.get("/api/auth/me", async (req, res) => {
 
 app.post("/api/auth/logout", async (_req, res) => {
   res.json({ ok: true, mensaje: "Sesión cerrada" });
+});
+
+/**
+ * Cambio de contraseña de la propia cuenta (sirve igual para la administradora
+ * y para las clientas). Pide la contraseña actual como confirmación y cierra
+ * las demás sesiones abiertas, por si la cuenta había quedado comprometida.
+ */
+app.patch("/api/auth/password", async (req, res) => {
+  const sid =
+    (req.headers["x-session"] as string | undefined) ??
+    (req.headers["x-session-id"] as string | undefined);
+  if (!sid) return res.status(401).json({ ok: false, mensaje: "No hay sesión" });
+
+  const { actual, nueva } = req.body as { actual?: string; nueva?: string };
+  if (!actual || !nueva) {
+    return res.status(400).json({ ok: false, mensaje: "Completá la contraseña actual y la nueva" });
+  }
+  if (nueva.length < 6) {
+    return res.status(400).json({ ok: false, mensaje: "La contraseña nueva necesita al menos 6 caracteres" });
+  }
+  if (nueva === actual) {
+    return res.status(400).json({ ok: false, mensaje: "La contraseña nueva tiene que ser distinta a la actual" });
+  }
+
+  const client = makeClient();
+  try {
+    const [sesion] = await client<{ usuario_id: string }[]>`
+      SELECT usuario_id FROM sesiones WHERE id = ${sid} AND expires_at > now()
+    `;
+    if (!sesion) return res.status(401).json({ ok: false, mensaje: "Sesión inválida" });
+
+    const [usuario] = await client<{ id: string; password: string }[]>`
+      SELECT id, password FROM usuarios WHERE id = ${sesion.usuario_id}
+    `;
+    if (!usuario) return res.status(401).json({ ok: false, mensaje: "Sesión inválida" });
+
+    if (!(await verificarClave(actual, usuario.password))) {
+      return res.status(401).json({ ok: false, mensaje: "La contraseña actual no es correcta" });
+    }
+
+    await client`
+      UPDATE usuarios SET password = ${await hashearClave(nueva)} WHERE id = ${usuario.id}
+    `;
+    // Las demás sesiones se cierran; la actual sigue funcionando.
+    await client`DELETE FROM sesiones WHERE usuario_id = ${usuario.id} AND id <> ${sid}`;
+
+    res.json({
+      ok: true,
+      mensaje: "Contraseña actualizada. Cerramos las sesiones abiertas en otros dispositivos.",
+    });
+  } finally {
+    await client.end();
+  }
+});
+
+// ---------------- usuarios ----------------
+app.get("/api/usuarios", async (req, res) => {
+  const client = makeClient();
+  try {
+    const rows = await client<{
+      id: string;
+      nombre: string;
+      email: string;
+      rol: string;
+      telefono: string | null;
+    }[]>`
+      SELECT u.id, u.nombre, u.email, u.rol, c.telefono
+      FROM usuarios u
+      LEFT JOIN clientes c ON lower(u.email) = lower(c.email)
+      ORDER BY u.nombre
+    `;
+    // Filter duplicates if any client has the same email multiple times, though it shouldn't happen.
+    // In PostgreSQL, if there are multiple, it will return multiple rows. We can group by or just return.
+    // Grouping by in SQL or JS. To be safe, we just return. The frontend can handle or we can distinct.
+    res.json(rows);
+  } finally {
+    await client.end();
+  }
+});
+
+app.post("/api/usuarios/:id/reset-password", async (req, res) => {
+  // Check if admin is doing this
+  const sid =
+    (req.headers["x-session"] as string | undefined) ??
+    (req.headers["x-session-id"] as string | undefined);
+  if (!sid) return res.status(401).json({ ok: false, mensaje: "No hay sesión" });
+
+  const client = makeClient();
+  try {
+    const [sesion] = await client<{ usuario_id: string }[]>`
+      SELECT usuario_id FROM sesiones WHERE id = ${sid} AND expires_at > now()
+    `;
+    if (!sesion) return res.status(401).json({ ok: false, mensaje: "Sesión inválida" });
+
+    const [admin] = await client<{ rol: string }[]>`
+      SELECT rol FROM usuarios WHERE id = ${sesion.usuario_id}
+    `;
+    if (admin?.rol !== "admin") return res.status(403).json({ ok: false, mensaje: "Acceso denegado" });
+
+    const nueva = crypto.randomUUID().slice(0, 8);
+    const hash = await hashearClave(nueva);
+    const [row] = await client<{ id: string }[]>`
+      UPDATE usuarios SET password = ${hash} WHERE id = ${req.params.id} RETURNING id
+    `;
+    if (!row) return res.status(404).json({ ok: false, mensaje: "Usuario no encontrado" });
+    
+    await client`DELETE FROM sesiones WHERE usuario_id = ${req.params.id}`;
+    
+    res.json({ ok: true, password: nueva });
+  } finally {
+    await client.end();
+  }
 });
 
 // ---------------- pedidos ----------------

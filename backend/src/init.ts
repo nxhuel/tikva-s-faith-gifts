@@ -1,6 +1,7 @@
 import postgres from "postgres";
 
 import { opcionesConexion } from "./dbconfig.js";
+import { esHash, hashearClave } from "./passwords.js";
 
 function makeInitClient() {
   return postgres(opcionesConexion());
@@ -170,8 +171,21 @@ export async function inicializarEsquema() {
     if (adminCount === 0) {
       await sql`
         INSERT INTO usuarios (id, nombre, email, password, rol)
-        VALUES ('u-admin', 'Equipo Tikva', 'admin', 'admin123', 'admin')
+        VALUES ('u-admin', 'Equipo Tikva', 'admin', ${await hashearClave("admin123")}, 'admin')
       `;
+    }
+
+    // Contraseñas guardadas en texto plano por versiones anteriores → hash
+    // scrypt. Es idempotente: sólo toca las filas que todavía no tienen hash.
+    const usuariosSinHash = await sql<{ id: string; password: string }[]>`
+      SELECT id, password FROM usuarios
+    `;
+    for (const usuario of usuariosSinHash) {
+      if (!esHash(usuario.password)) {
+        await sql`
+          UPDATE usuarios SET password = ${await hashearClave(usuario.password)} WHERE id = ${usuario.id}
+        `;
+      }
     }
   } catch (error: any) {
     // El caso más común al cambiar DB_PASSWORD: la contraseña del volumen de
