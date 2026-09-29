@@ -172,6 +172,7 @@ export async function inicializarEsquema() {
       await sql`
         INSERT INTO usuarios (id, nombre, email, password, rol)
         VALUES ('u-admin', 'Equipo Tikva', 'admin', ${await hashearClave("admin123")}, 'admin')
+        ON CONFLICT (id) DO NOTHING
       `;
     }
 
