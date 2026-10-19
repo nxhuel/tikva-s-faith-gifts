@@ -6,3 +6,5 @@ dist
 .output
 .DS_Store
 *.log
+
+.vercel

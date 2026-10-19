@@ -1,1 +1,0 @@
-var e=e=>new Intl.NumberFormat(`es-AR`,{style:`currency`,currency:`ARS`,maximumFractionDigits:0}).format(e),t=e=>new Intl.DateTimeFormat(`es-AR`,{day:`2-digit`,month:`short`,year:`numeric`}).format(new Date(e));export{e as n,t};
