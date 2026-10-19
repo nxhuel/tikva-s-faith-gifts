@@ -17,6 +17,14 @@ const backendOrigin = (process.env["BACKEND_ORIGIN"] ?? "http://localhost:3001")
   .replace(/\/+$/, "")
   .replace(/\/api$/, "");
 
+/**
+ * Preset de Nitro:
+ * - Docker/local: el Dockerfile define NITRO_PRESET=node-server.
+ * - Vercel: fuerza `vercel` para que el build genere `.vercel/output`
+ *   (Build Output API) aunque el default de la config sea Cloudflare.
+ */
+const nitroPreset = process.env["NITRO_PRESET"] || (process.env["VERCEL"] ? "vercel" : undefined);
+
 export default defineConfig({
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
@@ -24,6 +32,7 @@ export default defineConfig({
   },
   // Proxy de /api al backend Express (válido en build Nitro y en dev).
   nitro: {
+    ...(nitroPreset ? { preset: nitroPreset } : {}),
     routeRules: {
       "/api/**": {
         proxy: `${backendOrigin}/api/**`,

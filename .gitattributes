@@ -1,0 +1,7 @@
+# Normaliza finales de línea al hacer checkout/clone en cualquier SO.
+# Los scripts .sh DEBEN ser LF o /bin/sh falla con "set: Illegal option -".
+* text=auto
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf

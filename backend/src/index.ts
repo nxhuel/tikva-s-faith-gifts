@@ -79,7 +79,12 @@ function parseJson<T>(value: unknown, fallback: T): T {
 }
 
 // Migración al arrancar: crea esquema, negocio y usuario admin si no existen.
-await inicializarEsquema();
+// En Vercel NO se corre en cada arranque en frío: se ejecuta una sola vez con
+// `npm run db:migrate` (ver README de despliegue). Correr DDL en cada cold start
+// suma latencia y puede chocar si Vercel levanta varias instancias a la vez.
+if (!process.env.VERCEL) {
+  await inicializarEsquema();
+}
 
 // ---------------- sesiones (solo para mantener la demo simple) ----------------
 app.use(async (req: Request, _res: Response, next: NextFunction) => {
@@ -1288,9 +1293,15 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   res.status(500).json({ ok: false, mensaje: "Error interno del servidor" });
 });
 
-app.listen(PORT, () => {
-  console.log(`API backend escuchando en http://localhost:${PORT}`);
-});
+// En local/Docker el proceso escucha normalmente. En Vercel la app se exporta
+// como handler serverless (ver api/index.ts) y NO debe abrir un puerto.
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`API backend escuchando en http://localhost:${PORT}`);
+  });
+}
+
+export default app;
 
 function slugify(texto: string): string {
   return texto

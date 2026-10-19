@@ -1,0 +1,1 @@
+import{y as e}from"./index-B--nq1nT.js";var t=e(),n=()=>(0,t.jsx)(`p`,{className:`p-16 text-center`,children:`Producto no encontrado.`});export{n as notFoundComponent};

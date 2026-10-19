@@ -9,7 +9,11 @@ COPY package.json tsconfig.json ./
 COPY src ./src
 COPY entrypoint.sh ./
 
-RUN npm install --omit=dev --include=dev && chmod +x entrypoint.sh
+# Defensa ante checkouts en Windows: si el .sh llega con CRLF, /bin/sh
+# falla con "set: Illegal option -". Se normaliza dentro de la imagen.
+RUN npm install --omit=dev --include=dev \
+    && sed -i 's/\r$//' entrypoint.sh \
+    && chmod +x entrypoint.sh
 
 EXPOSE 3001
 ENTRYPOINT ["dumb-init", "--"]

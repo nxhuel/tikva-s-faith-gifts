@@ -35,6 +35,12 @@ export function opcionesConexion() {
   const pideSsl =
     String(process.env.DB_SSL ?? "").toLowerCase() === "true" || sslmode === "require";
 
+  // Neon/Supabase entregan una URL "pooled" (PgBouncer en modo transacción).
+  // Ahí no sirven los prepared statements con nombre; se desactivan solos.
+  const esPooler = host.includes("pooler");
+  const usarPrepare =
+    process.env.DB_PREPARE != null ? process.env.DB_PREPARE === "true" : !esPooler;
+
   return {
     host,
     port,
@@ -42,6 +48,7 @@ export function opcionesConexion() {
     user,
     password,
     max: Number(process.env.DB_POOL ?? 10),
+    prepare: usarPrepare,
     ssl: pideSsl ? { rejectUnauthorized: false } : undefined,
   };
 }
